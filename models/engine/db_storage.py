@@ -19,10 +19,10 @@ class DBStorage:
 
     def __init__(self):
         """initializes the class"""
-        mysql_username = os.environ.get('MYSQL_USERNAME')
-        mysql_password = os.environ.get('MYSQL_PASSWORD')
-        mysql_host = os.environ.get('MYSQL_HOST')
-        mysql_database = os.environ.get('MYSQL_DATABASE')
+        mysql_username = os.environ.get('HBNB_MYSQL_USER')
+        mysql_password = os.environ.get('HBNB_MYSQL_PWD')
+        mysql_host = os.environ.get('HBNB_MYSQL_HOST')
+        mysql_database = os.environ.get('HBNB_MYSQL_DB')
         hbnb_env = os.environ.get('HBNB_ENV')
 
         self.__engine = create_engine('mysql+mysqldb://{}:{}@{}/{}'
@@ -51,18 +51,16 @@ class DBStorage:
 
     def new(self, obj):
         """adds object to the current db session"""
-        session.add(obj)
-        session.commit()
+        self.__session.add(obj)
 
     def save(self):
         """commit all changes of the current database session"""
-        session.commit()
+        self.__session.commit()
 
     def delete(self, obj=None):
         """delete from the current database session obj if not None"""
         if obj:
-            session.delete(obj)
-            session.commit()
+            self.__session.delete(obj)
         else:
             return
 
