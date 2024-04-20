@@ -8,20 +8,20 @@ from sqlalchemy import Column, String, Integer, DateTime
 Base = declarative_base()
 class BaseModel:
     """A base class for all hbnb models"""
+    id = Column(String(60), nullable=False, primary_key=True)
+    created_at = Column(DateTime, nullable=False, default=datetime.utcnow())
+    updated_at = Column(DateTime, nullable=False, default=datetime.utcnow())
+
     def __init__(self, *args, **kwargs):
-        """Instatntiates a new model"""
-        if not kwargs:
-            from models import storage
-            self.id = Column(String(60), primary_key=True, unique=True, nullable=False)
-            self.created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
-            self.updated_at = Column(DateTime, nullable=False, default=datetime.utcnow)
-        else:
-            kwargs['updated_at'] = datetime.strptime(kwargs['updated_at'],
-                                                     '%Y-%m-%dT%H:%M:%S.%f')
-            kwargs['created_at'] = datetime.strptime(kwargs['created_at'],
-                                                     '%Y-%m-%dT%H:%M:%S.%f')
-            del kwargs['__class__']
-            self.__dict__.update(kwargs)
+        """Instantiates a new model"""
+        self.id = str(uuid.uuid4())
+        self.created_at = self.updated_at = datetime.now()
+        if kwargs:
+            for k, v in kwargs.items():
+                if k == "created_at" or k == "updated_at":
+                    v = datetime.strptime(v, "%Y-%m-%dT%H:%M:%S.%f")
+                if k != "__class__":
+                    setattr(self, k, v)
 
     def __str__(self):
         """Returns a string representation of the instance"""
@@ -43,9 +43,8 @@ class BaseModel:
                           (str(type(self)).split('.')[-1]).split('\'')[0]})
         dictionary['created_at'] = self.created_at.isoformat()
         dictionary['updated_at'] = self.updated_at.isoformat()
-        for key, value in dictionary.items():
-            if key == _sa_instance_state:
-                del dictionary[_sa_instance_state]
+        if '_sa_instance_state' in dictionary.keys():
+            del dictionary['_sa_instance_state']
         return dictionary
 
     def delete(self):
