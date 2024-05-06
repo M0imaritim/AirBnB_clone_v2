@@ -7,7 +7,7 @@ sudo apt install -y nginx
 sudo mkdir -p /data/web_static/releases/test
 sudo mkdir -p /data/web_static/shared
 
-sudo echo "Web deploy" > /data/web_static/releases/test/index.html
+echo "Web deploy" > /data/web_static/releases/test/index.html
 
 sudo ln -sf /data/web_static/releases/test/ /data/web_static/current
 
