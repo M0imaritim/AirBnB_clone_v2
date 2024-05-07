@@ -16,22 +16,11 @@ def do_clean(number=0):
 
     if number < 0:
         return False
-    elif number == 0 or number == 1:
-        number = 1
+    elif number == 0:
+        number = 2
+    else:
+        number += 1
 
-    with lcd("versions"):
-        archives = sorted(os.listdir("."), reverse=True)
-
-        # Delete unnecessary archives
-        for archive in archives[number:]:
-            local("rm -f {}".format(archive))
-
-        releases_path = "/data/web_static/releases/"
-        with lcd(releases_path):
-            archives = run("ls -1t").split()
-
-            # Delete unnecessary archives
-            for archive in archives[number:]:
-                run("rm -rf {}".format(os.path.join(releases_path, archive)))
-
-        return True
+   local('cd versions ; ls -t | tail -n +{} | xargs rm -rf'.format(number))
+   r_path = "/data/web_static/releases/"
+   run('cd {} ; ls -t | tail -n +{} | xargs rm -rf'.format(r_path, number))
