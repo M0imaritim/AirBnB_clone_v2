@@ -10,6 +10,7 @@ import os
 env.hosts = ['35.153.18.12', '52.3.243.162']
 env.user = "ubuntu"
 
+
 def do_pack():
     """Generates a .tgz archive."""
     time = datetime.now().strftime("%Y%m%d%H%M%S")
@@ -22,6 +23,7 @@ def do_pack():
     if result.failed:
         return None
     return arch_path
+
 
 def do_deploy(archive_path):
     """Distributes an archive to web servers."""
@@ -42,8 +44,7 @@ def do_deploy(archive_path):
         run("rm -rf {}/web_static".format(release_path))
         run("rm -rf /data/web_static/current")
         run("ln -s {} /data/web_static/current".format(release_path))
-        run("echo 'Deployed successfully' | sudo tee /data/web_static/current/0-index.html")
-        run("echo 'My custom page' | sudo tee /data/web_static/current/my_index.html")
+        
 
         return True
     except:
