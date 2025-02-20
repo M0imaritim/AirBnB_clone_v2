@@ -42,9 +42,13 @@ def do_deploy(archive_path):
         run("rm -rf {}/web_static".format(release_path))
         run("rm -rf /data/web_static/current")
         run("ln -s {} /data/web_static/current".format(release_path))
+        run("echo 'Deployed successfully' | sudo tee /data/web_static/current/0-index.html")
+        run("echo 'My custom page' | sudo tee /data/web_static/current/my_index.html")
+
         return True
     except:
         return False
+
 
 def deploy():
     """Creates and distributes an archive to web servers."""
