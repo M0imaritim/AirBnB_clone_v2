@@ -1,24 +1,25 @@
-# Manifest to setup server for web static
-
+# Update system packages
 exec {'update':
   provider => shell,
   command  => 'sudo apt-get -y update',
   before   => Exec['install Nginx'],
 }
 
+# Install Nginx
 exec {'install Nginx':
   provider => shell,
   command  => 'sudo apt-get -y install nginx',
   before   => Exec['start Nginx'],
 }
 
+# Start Nginx service
 exec {'start Nginx':
   provider => shell,
   command  => 'sudo service nginx start',
   before   => File['/data/'],
 }
 
-# Ensure the /data directory exists and is owned by ubuntu
+# Ensure /data directory exists with correct ownership
 file {'/data/':
   ensure  => directory,
   owner   => 'ubuntu',
@@ -28,7 +29,7 @@ file {'/data/':
   before  => File['/data/web_static/'],
 }
 
-# Ensure /data/web_static exists
+# Ensure /data/web_static exists with correct ownership
 file {'/data/web_static/':
   ensure  => directory,
   owner   => 'ubuntu',
@@ -63,33 +64,32 @@ file {'/data/web_static/releases/test/':
   before  => File['/data/web_static/releases/test/index.html'],
 }
 
-# Create test HTML file
+# Create a test HTML file
 file {'/data/web_static/releases/test/index.html':
   ensure  => file,
   content => 'Holberton School',
   owner   => 'ubuntu',
   group   => 'ubuntu',
   mode    => '0644',
-  before  => Exec['symbolic link'],
+  before  => Exec['create symbolic link'],
 }
 
-# Create symbolic link
-exec {'symbolic link':
+# Create symbolic link and fix ownership
+exec {'create symbolic link':
   provider => shell,
-  command  => 'ln -sf /data/web_static/releases/test/ /data/web_static/current',
+  command  => 'ln -sf /data/web_static/releases/test/ /data/web_static/current && sudo chown -h ubuntu:ubuntu /data/web_static/current',
   before   => Exec['put location'],
 }
 
-# Update Nginx configuration
+# Ensure Nginx is correctly configured
 exec {'put location':
   provider => shell,
-  command  => 'sudo sed -i \'48i\\tlocation /hbnb_static/ {\n\t\talias /data/web_static/current/;\n\t\tautoindex off;\n\t}\n\' /etc/nginx/sites-available/default',
+  command  => 'sudo sed -i \'/server_name _;/a \\tlocation /hbnb_static/ {\\n\\t\\talias /data/web_static/current/;\\n\\t\\tautoindex off;\\n\\t}\\n\' /etc/nginx/sites-available/default',
   before   => Exec['restart Nginx'],
 }
 
-# Restart Nginx to apply changes
+# Restart Nginx to apply configuration changes
 exec {'restart Nginx':
   provider => shell,
   command  => 'sudo service nginx restart',
 }
-
