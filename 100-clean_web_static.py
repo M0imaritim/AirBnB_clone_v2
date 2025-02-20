@@ -17,13 +17,13 @@ def do_clean(number=0):
         return False
 
     if number < 1:
-        number = 1  # Keep at least one archive
+        number = 1  # If number is 0, keep only 1 archive
 
-    # Delete old archives locally
+    # Deleting old archives locally
     local('cd versions && ls -t | tail -n +{} | xargs rm -rf || true'
-          .format(number))
+          .format(number + 1))
 
-    # Delete old archives on remote servers
+    # Deleting old archives remotely
     r_path = "/data/web_static/releases/"
     run('cd {} && ls -t | tail -n +{} | xargs rm -rf || true'
-        .format(r_path, number))
+        .format(r_path, number + 1))
