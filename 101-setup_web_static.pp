@@ -1,4 +1,4 @@
-# Update system packages
+# Update package list
 exec {'update':
   provider => shell,
   command  => 'sudo apt-get -y update',
@@ -19,7 +19,7 @@ exec {'start Nginx':
   before   => File['/data/'],
 }
 
-# Ensure /data directory exists with correct ownership
+# Ensure /data directory exists with correct permissions
 file {'/data/':
   ensure  => directory,
   owner   => 'ubuntu',
@@ -29,7 +29,7 @@ file {'/data/':
   before  => File['/data/web_static/'],
 }
 
-# Ensure /data/web_static exists with correct ownership
+# Ensure /data/web_static exists
 file {'/data/web_static/':
   ensure  => directory,
   owner   => 'ubuntu',
@@ -64,7 +64,7 @@ file {'/data/web_static/releases/test/':
   before  => File['/data/web_static/releases/test/index.html'],
 }
 
-# Create a test HTML file
+# Create an index.html file
 file {'/data/web_static/releases/test/index.html':
   ensure  => file,
   content => 'Holberton School',
@@ -78,17 +78,17 @@ file {'/data/web_static/releases/test/index.html':
 exec {'create symbolic link':
   provider => shell,
   command  => 'ln -sf /data/web_static/releases/test/ /data/web_static/current && sudo chown -h ubuntu:ubuntu /data/web_static/current',
-  before   => Exec['put location'],
+  before   => Exec['configure nginx'],
 }
 
-# Ensure Nginx is correctly configured
-exec {'put location':
+# Update Nginx configuration
+exec {'configure nginx':
   provider => shell,
-  command  => 'sudo sed -i \'/server_name _;/a \\tlocation /hbnb_static/ {\\n\\t\\talias /data/web_static/current/;\\n\\t\\tautoindex off;\\n\\t}\\n\' /etc/nginx/sites-available/default',
+  command  => 'sudo sed -i "/server_name _;/a \\tlocation /hbnb_static/ {\\n\\t\\talias /data/web_static/current/;\\n\\t\\tindex index.html;\\n\\t}" /etc/nginx/sites-available/default',
   before   => Exec['restart Nginx'],
 }
 
-# Restart Nginx to apply configuration changes
+# Restart Nginx
 exec {'restart Nginx':
   provider => shell,
   command  => 'sudo service nginx restart',
