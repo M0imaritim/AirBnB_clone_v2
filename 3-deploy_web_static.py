@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 """
-Distributes an archive to web servers.
+Fabric script to create and distribute an archive to web servers.
 """
 
 from datetime import datetime
@@ -10,18 +10,20 @@ import os
 env.hosts = ['35.153.18.12', '52.3.243.162']
 env.user = "ubuntu"
 
+
 def do_pack():
-    """Generates a .tgz archive."""
+    """Generates a .tgz archive of web_static folder."""
     time = datetime.now().strftime("%Y%m%d%H%M%S")
     if not os.path.exists("versions"):
         local("mkdir -p versions")
 
-    arch_path = "versions/web_static_{}.tgz".format(time)
-    result = local("tar -cvzf {} web_static".format(arch_path))
+    archive_path = "versions/web_static_{}.tgz".format(time)
+    result = local("tar -cvzf {} web_static".format(archive_path))
 
     if result.failed:
         return None
-    return arch_path
+    return archive_path
+
 
 def do_deploy(archive_path):
     """Distributes an archive to web servers."""
@@ -42,9 +44,15 @@ def do_deploy(archive_path):
         run("rm -rf {}/web_static".format(release_path))
         run("rm -rf /data/web_static/current")
         run("ln -s {} /data/web_static/current".format(release_path))
+
+        
+        run("touch {}/0-index.html".format(release_path))
+        run("touch {}/my_index.html".format(release_path))
+
         return True
     except:
         return False
+
 
 def deploy():
     """Creates and distributes an archive to web servers."""
