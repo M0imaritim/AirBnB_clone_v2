@@ -1,9 +1,10 @@
 #!/usr/bin/python3
 """ deletes out-of-date archives """
+
 from fabric.api import *
 
 
-env.hosts = ['54.145.240.184', '54.89.109.0']
+env.hosts = ['35.153.18.12', '52.3.243.162']
 env.user = "ubuntu"
 
 
