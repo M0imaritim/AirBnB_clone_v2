@@ -1,4 +1,4 @@
-#manifest to setup server for web static
+# Manifest to setup server for web static
 
 exec {'update':
   provider => shell,
@@ -15,48 +15,81 @@ exec {'install Nginx':
 exec {'start Nginx':
   provider => shell,
   command  => 'sudo service nginx start',
-  before   => Exec['create first directory'],
+  before   => File['/data/'],
 }
 
-exec {'create first directory':
-  provider => shell,
-  command  => 'sudo mkdir -p /data/web_static/releases/test/',
-  before   => Exec['create second directory'],
+# Ensure the /data directory exists and is owned by ubuntu
+file {'/data/':
+  ensure  => directory,
+  owner   => 'ubuntu',
+  group   => 'ubuntu',
+  mode    => '0755',
+  recurse => true,
+  before  => File['/data/web_static/'],
 }
 
-exec {'create second directory':
-  provider => shell,
-  command  => 'sudo mkdir -p /data/web_static/shared/',
-  before   => Exec['content into html'],
+# Ensure /data/web_static exists
+file {'/data/web_static/':
+  ensure  => directory,
+  owner   => 'ubuntu',
+  group   => 'ubuntu',
+  mode    => '0755',
+  before  => [File['/data/web_static/releases/'], File['/data/web_static/shared/']],
 }
 
-exec {'content into html':
-  provider => shell,
-  command  => 'echo "Holberton School" | sudo tee /data/web_static/releases/test/index.html',
-  before   => Exec['symbolic link'],
+# Ensure /data/web_static/releases exists
+file {'/data/web_static/releases/':
+  ensure  => directory,
+  owner   => 'ubuntu',
+  group   => 'ubuntu',
+  mode    => '0755',
+  before  => File['/data/web_static/releases/test/'],
 }
 
+# Ensure /data/web_static/shared exists
+file {'/data/web_static/shared/':
+  ensure  => directory,
+  owner   => 'ubuntu',
+  group   => 'ubuntu',
+  mode    => '0755',
+}
+
+# Ensure /data/web_static/releases/test exists
+file {'/data/web_static/releases/test/':
+  ensure  => directory,
+  owner   => 'ubuntu',
+  group   => 'ubuntu',
+  mode    => '0755',
+  before  => File['/data/web_static/releases/test/index.html'],
+}
+
+# Create test HTML file
+file {'/data/web_static/releases/test/index.html':
+  ensure  => file,
+  content => 'Holberton School',
+  owner   => 'ubuntu',
+  group   => 'ubuntu',
+  mode    => '0644',
+  before  => Exec['symbolic link'],
+}
+
+# Create symbolic link
 exec {'symbolic link':
   provider => shell,
-  command  => 'sudo ln -sf /data/web_static/releases/test/ /data/web_static/current',
+  command  => 'ln -sf /data/web_static/releases/test/ /data/web_static/current',
   before   => Exec['put location'],
 }
 
+# Update Nginx configuration
 exec {'put location':
   provider => shell,
   command  => 'sudo sed -i \'48i\\tlocation /hbnb_static/ {\n\t\talias /data/web_static/current/;\n\t\tautoindex off;\n\t}\n\' /etc/nginx/sites-available/default',
   before   => Exec['restart Nginx'],
 }
 
+# Restart Nginx to apply changes
 exec {'restart Nginx':
   provider => shell,
   command  => 'sudo service nginx restart',
-  before   => File['/data/']
 }
 
-file {'/data/':
-  ensure  => directory,
-  owner   => 'ubuntu',
-  group   => 'ubuntu',
-  recurse => true,
-  }
